@@ -28,10 +28,10 @@ type MetricOption interface {
 	apply(*MetricOptions)
 }
 
-var _ MetricOption = &WithTags{}
+var _ MetricOption = &Tags{}
 
-type WithTags map[string]string
+type Tags map[string]string
 
-func (w WithTags) apply(options *MetricOptions) {
+func (w Tags) apply(options *MetricOptions) {
 	options.Tags = w
 }
