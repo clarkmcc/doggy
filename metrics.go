@@ -131,7 +131,7 @@ func (m TimingMetric) TimingE(value time.Duration, options ...MetricOption) erro
 	return client.Timing(m.getName(), value, opts.getTags(), opts.SampleRate)
 }
 
-func NewMetric[T CounterMetric | HistogramMetric | GaugeMetric | DistributionMetric](serviceName, metricName string, tags Tags) (out T) {
+func NewMetric[T CounterMetric | HistogramMetric | GaugeMetric | DistributionMetric | TimingMetric](serviceName, metricName string, tags Tags) (out T) {
 	switch any(out).(type) {
 	case CounterMetric:
 		return T(CounterMetric{Metric{
