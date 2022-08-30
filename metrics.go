@@ -3,6 +3,7 @@ package doggy
 import (
 	"fmt"
 	"github.com/DataDog/datadog-go/statsd"
+	"os"
 	"strings"
 	"sync"
 	"time"
@@ -16,7 +17,7 @@ var (
 )
 
 var InitClient = func() (*statsd.Client, error) {
-	client, err := statsd.New("127.0.0.1:8125")
+	client, err := statsd.New(os.Getenv("DOGSTATSD_ADDR"))
 	if err != nil {
 		return nil, err
 	}
@@ -36,6 +37,7 @@ func initClient() {
 type Metric struct {
 	ServiceName string
 	MetricName  string
+	Tags        Tags
 }
 
 func (m Metric) getName() string {
@@ -129,32 +131,37 @@ func (m TimingMetric) TimingE(value time.Duration, options ...MetricOption) erro
 	return client.Timing(m.getName(), value, opts.getTags(), opts.SampleRate)
 }
 
-func NewMetric[T CounterMetric | HistogramMetric | GaugeMetric | DistributionMetric](serviceName, metricName string) (out T) {
+func NewMetric[T CounterMetric | HistogramMetric | GaugeMetric | DistributionMetric](serviceName, metricName string, tags Tags) (out T) {
 	switch any(out).(type) {
 	case CounterMetric:
 		return T(CounterMetric{Metric{
 			ServiceName: serviceName,
 			MetricName:  metricName,
+			Tags:        tags,
 		}})
 	case HistogramMetric:
 		return T(HistogramMetric{Metric{
 			ServiceName: serviceName,
 			MetricName:  metricName,
+			Tags:        tags,
 		}})
 	case GaugeMetric:
 		return T(GaugeMetric{Metric{
 			ServiceName: serviceName,
 			MetricName:  metricName,
+			Tags:        tags,
 		}})
 	case DistributionMetric:
 		return T(DistributionMetric{Metric{
 			ServiceName: serviceName,
 			MetricName:  metricName,
+			Tags:        tags,
 		}})
 	case TimingMetric:
 		return T(TimingMetric{Metric{
 			ServiceName: serviceName,
 			MetricName:  metricName,
+			Tags:        tags,
 		}})
 	default:
 		panic(fmt.Sprintf("unsupported type %T", out))
