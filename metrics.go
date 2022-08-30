@@ -3,6 +3,7 @@ package doggy
 import (
 	"fmt"
 	"github.com/DataDog/datadog-go/statsd"
+	"strings"
 	"sync"
 	"time"
 )
@@ -38,11 +39,9 @@ type Metric struct {
 }
 
 func (m Metric) getName() string {
-	name := m.ServiceName + "/" + m.MetricName
-	if len(Prefix) > 0 {
-		name = Prefix + name
-	}
-	return name
+	return strings.Trim(strings.Join([]string{
+		Prefix, m.ServiceName, m.MetricName,
+	}, "."), " .")
 }
 
 type CounterMetric struct {
