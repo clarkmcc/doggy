@@ -14,7 +14,7 @@ import (
 
 func TestMetric_GetName(t *testing.T) {
 	tests := map[string]struct {
-		prefix, service, metric, expected string
+		namespace, service, metric, expected string
 	}{
 		"happy path": {
 			service:  "foo",
@@ -22,17 +22,17 @@ func TestMetric_GetName(t *testing.T) {
 			expected: "foo.bar",
 		},
 		"happy path with prefix": {
-			prefix:   "ptkr_io",
-			service:  "foo",
-			metric:   "bar",
-			expected: "ptkr_io.foo.bar",
+			namespace: "ns",
+			service:   "foo",
+			metric:    "bar",
+			expected:  "ns.foo.bar",
 		},
 	}
 
 	for title, test := range tests {
 		t.Run(title, func(t *testing.T) {
-			Prefix = test.prefix
 			assert.Equal(t, test.expected, (Metric{
+				Namespace:   test.namespace,
 				ServiceName: test.service,
 				MetricName:  test.metric,
 			}).getName())

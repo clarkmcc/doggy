@@ -8,14 +8,7 @@ type MetricOptions struct {
 }
 
 func (o MetricOptions) getTags(merge ...Tags) (out []string) {
-	tags := o.Tags
-	if len(merge) > 0 {
-		merge[0].MergeInto(tags)
-	}
-	for k, v := range tags {
-		out = append(out, fmt.Sprintf("%v:%v", k, v))
-	}
-	return
+	return o.Tags.getTags(merge...)
 }
 
 func buildMetricOptions(options ...MetricOption) *MetricOptions {
@@ -23,26 +16,75 @@ func buildMetricOptions(options ...MetricOption) *MetricOptions {
 		SampleRate: 1,
 	}
 	for _, opt := range options {
-		opt.apply(&opts)
+		opt.applyMetricOption(&opts)
 	}
 	return &opts
 }
 
 type MetricOption interface {
-	apply(*MetricOptions)
+	applyMetricOption(*MetricOptions)
 }
 
 var _ MetricOption = &Tags{}
+var _ ServiceCheckOption = &Tags{}
 
 type Tags map[string]string
 
-func (t Tags) apply(options *MetricOptions) {
+func (t Tags) applyServiceCheckOption(options *ServiceCheckOptions) {
 	options.Tags = t
 }
 
-// MergeFrom merges t1 into t2 giving priority to any matching keys in t1
+func (t Tags) applyMetricOption(options *MetricOptions) {
+	options.Tags = t
+}
+
+// MergeInto merges t1 into t2 giving priority to any matching keys in t1
 func (t1 Tags) MergeInto(t2 Tags) {
 	for k, v := range t1 {
 		t2[k] = v
 	}
+}
+
+func (t1 Tags) getTags(t2 ...Tags) (out []string) {
+	if len(t2) > 0 {
+		t2[0].MergeInto(t1)
+	}
+	for k, v := range t1 {
+		out = append(out, fmt.Sprintf("%v:%v", k, v))
+	}
+	return
+}
+
+type ServiceCheckOptions struct {
+	Tags     Tags
+	Hostname string
+	Message  string
+}
+
+type ServiceCheckOption interface {
+	applyServiceCheckOption(check *ServiceCheckOptions)
+}
+
+var _ ServiceCheckOption = Hostname("")
+
+type Hostname string
+
+func (h Hostname) applyServiceCheckOption(check *ServiceCheckOptions) {
+	check.Hostname = string(h)
+}
+
+var _ ServiceCheckOption = Message("")
+
+type Message string
+
+func (m Message) applyServiceCheckOption(check *ServiceCheckOptions) {
+	check.Message = string(m)
+}
+
+func buildServiceCheckOptions(options ...ServiceCheckOption) *ServiceCheckOptions {
+	opts := ServiceCheckOptions{}
+	for _, opt := range options {
+		opt.applyServiceCheckOption(&opts)
+	}
+	return &opts
 }
