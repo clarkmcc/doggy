@@ -16,6 +16,7 @@ func StartProfiler(serviceName, serviceVersion string, options ...profiler.Optio
 	if len(serviceName) == 0 {
 		return fmt.Errorf("service name required by profiler")
 	}
+	opts = append(opts, profiler.WithService(serviceName))
 	if addr := os.Getenv("DOGSTATSD_APM_ADDR"); len(addr) > 0 {
 		opts = append(opts, profiler.WithAgentAddr(addr))
 	}
