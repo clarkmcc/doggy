@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"gopkg.in/DataDog/dd-trace-go.v1/ddtrace/tracer"
 	"os"
+	"runtime"
 )
 
 // StartTracer starts the tracer with the correct env variables
@@ -38,6 +39,11 @@ func StartSpanFromContext(ctx context.Context, operationName string, opts ...Tra
 	for i := 0; i < len(opts); i++ {
 		options[i] = opts[i].intoStartSpanOption()
 	}
+	if len(operationName) == 0 {
+		file, line, function := getCurrentFunc()
+		operationName = function
+		options = append(options, tracer.Tag("file", fmt.Sprintf("%v:%v", file, line)))
+	}
 	var span tracer.Span
 	span, ok := tracer.SpanFromContext(ctx)
 	if !ok {
@@ -46,4 +52,12 @@ func StartSpanFromContext(ctx context.Context, operationName string, opts ...Tra
 		span = tracer.StartSpan(operationName, append(options, tracer.ChildOf(span.Context()))...)
 	}
 	return span
+}
+
+func getCurrentFunc() (string, int, string) {
+	pc := make([]uintptr, 15)
+	n := runtime.Callers(2, pc)
+	frames := runtime.CallersFrames(pc[:n])
+	frame, _ := frames.Next()
+	return frame.File, frame.Line, frame.Function
 }
