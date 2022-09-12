@@ -104,18 +104,15 @@ func (s StartSpanOption) intoStartSpanOption() tracer.StartSpanOption {
 	return tracer.StartSpanOption(s)
 }
 
-var _ TracerStartSpanOption = TraceCache("")
+var _ TracerStartSpanOption = SpanType("")
 
-type TraceCache string
+type SpanType string
 
-func (t TraceCache) intoStartSpanOption() tracer.StartSpanOption {
-	return tracer.SpanType("cache")
+func (t SpanType) intoStartSpanOption() tracer.StartSpanOption {
+	return tracer.SpanType(string(t))
 }
 
-var _ TracerStartSpanOption = TraceDatabase("")
-
-type TraceDatabase string
-
-func (t TraceDatabase) intoStartSpanOption() tracer.StartSpanOption {
-	return tracer.SpanType("db")
-}
+var (
+	TraceCache    = SpanType("cache")
+	TraceDatabase = SpanType("db")
+)
