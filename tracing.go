@@ -27,6 +27,11 @@ func StartTracer(serviceName, serviceVersion string, options ...tracer.StartOpti
 	return nil
 }
 
+// StopTracer stops the started tracer. Subsequent calls are valid but become no-op.
+func StopTracer() {
+	tracer.Stop()
+}
+
 // StartSpanFromContext starts a new span which is a child of an existing span if one has been injected
 func StartSpanFromContext(ctx context.Context, operationName string, opts ...tracer.StartSpanOption) tracer.Span {
 	var span tracer.Span
