@@ -40,7 +40,7 @@ func StartSpanFromContext(ctx context.Context, operationName string, opts ...Tra
 		options[i] = opts[i].intoStartSpanOption()
 	}
 	if len(operationName) == 0 {
-		file, line, function := getCurrentFunc()
+		file, line, function := getParentFunc(1)
 		operationName = function
 		options = append(options, tracer.Tag("file", fmt.Sprintf("%v:%v", file, line)))
 	}
@@ -54,9 +54,12 @@ func StartSpanFromContext(ctx context.Context, operationName string, opts ...Tra
 	return span
 }
 
-func getCurrentFunc() (string, int, string) {
+// getParentFunc returns the call site metadata about the function that called this function. Providing a skip
+// will increment how many parent callers we skip, i.e. getParentFunc(1) returns the parent of the function that
+// called this function.
+func getParentFunc(skip int) (string, int, string) {
 	pc := make([]uintptr, 15)
-	n := runtime.Callers(2, pc)
+	n := runtime.Callers(2+skip, pc)
 	frames := runtime.CallersFrames(pc[:n])
 	frame, _ := frames.Next()
 	return frame.File, frame.Line, frame.Function
