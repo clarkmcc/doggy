@@ -34,10 +34,10 @@ func StopTracer() {
 
 // StartSpanFromContext starts a new span which is a child of an existing span if one has been injected
 func StartSpanFromContext(ctx context.Context, operationName string, opts ...tracer.StartSpanOption) tracer.Span {
-	var span tracer.Span
-	span, ok := tracer.SpanFromContext(ctx)
+	var s tracer.Span
+	s, ok := tracer.SpanFromContext(ctx)
 	if !ok {
-		span = tracer.StartSpan(operationName, append(opts, tracer.ChildOf(span.Context()))...)
+		s = tracer.StartSpan(operationName, append(opts, tracer.ChildOf(s.Context()))...)
 	}
-	return span
+	return s
 }
