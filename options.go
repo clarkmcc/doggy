@@ -1,6 +1,9 @@
 package doggy
 
-import "fmt"
+import (
+	"fmt"
+	"gopkg.in/DataDog/dd-trace-go.v1/ddtrace/tracer"
+)
 
 type MetricOptions struct {
 	Tags       Tags
@@ -87,4 +90,32 @@ func buildServiceCheckOptions(options ...ServiceCheckOption) *ServiceCheckOption
 		opt.applyServiceCheckOption(&opts)
 	}
 	return &opts
+}
+
+type TracerStartSpanOption interface {
+	intoStartSpanOption() tracer.StartSpanOption
+}
+
+var _ TracerStartSpanOption = StartSpanOption(nil)
+
+type StartSpanOption tracer.StartSpanOption
+
+func (s StartSpanOption) intoStartSpanOption() tracer.StartSpanOption {
+	return tracer.StartSpanOption(s)
+}
+
+var _ TracerStartSpanOption = TraceCache("")
+
+type TraceCache string
+
+func (t TraceCache) intoStartSpanOption() tracer.StartSpanOption {
+	return tracer.SpanType("cache")
+}
+
+var _ TracerStartSpanOption = TraceDatabase("")
+
+type TraceDatabase string
+
+func (t TraceDatabase) intoStartSpanOption() tracer.StartSpanOption {
+	return tracer.SpanType("db")
 }
