@@ -54,6 +54,17 @@ func StartSpanFromContext(ctx context.Context, operationName string, opts ...Tra
 	return span
 }
 
+// FinishSpan finishes a previously started span with an optional error.
+//
+//		func doSomething() (err error) {
+//			span := StartSpanFromContext(context.Background())
+//			defer doggy.FinishSpan(span, err)
+//	     	...
+//		}
+func FinishSpan(span tracer.Span, err error, options ...tracer.FinishOption) {
+	span.Finish(append(options, tracer.WithError(err))...)
+}
+
 // getParentFunc returns the call site metadata about the function that called this function. Providing a skip
 // will increment how many parent callers we skip, i.e. getParentFunc(1) returns the parent of the function that
 // called this function.
