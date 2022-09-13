@@ -54,14 +54,19 @@ func StartSpanFromContext(ctx context.Context, operationName string, opts ...Tra
 	return span
 }
 
-// FinishSpan finishes a previously started span with an optional error.
+// FinishSpan finishes a previously started span with an optional error. The error is provided as a pointer
+// which allows callers to defer a named return variable err by reference.
 //
 //		func doSomething() (err error) {
 //			span := StartSpanFromContext(context.Background())
-//			defer doggy.FinishSpan(span, err)
+//			defer doggy.FinishSpan(span, &err)
 //	     	...
 //		}
-func FinishSpan(span tracer.Span, err error, options ...tracer.FinishOption) {
+func FinishSpan(span tracer.Span, e *error, options ...tracer.FinishOption) {
+	var err error
+	if e != nil {
+		err = *e
+	}
 	span.Finish(append(options, tracer.WithError(err))...)
 }
 
