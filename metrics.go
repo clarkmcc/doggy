@@ -10,8 +10,9 @@ import (
 )
 
 var (
-	client   *statsd.Client
-	initOnce sync.Once
+	client             StatsdClient
+	initOnce           sync.Once
+	PanicOnStatsdError = true
 )
 
 // InitClient is a function that knows how to initialize a dogstatsd client. By default, it will
@@ -30,7 +31,10 @@ func initClient() {
 		var err error
 		client, err = InitClient()
 		if err != nil {
-			panic(err)
+			if PanicOnStatsdError {
+				panic(err)
+			}
+			client = &mockClient{}
 		}
 	})
 }
